@@ -76,7 +76,7 @@ export async function openFixPullRequest(input: OpenFixPrInput) {
     pr_url: pr.html_url,
     diff: input.fix.fixed_source,
     fix_narrative: input.fix.fix_narrative,
-    model: 'gpt-4.1',
+    model: 'gpt-4o',
     tokens_used: 0,
     status: 'pr_open',
   });

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import crypto from 'node:crypto';
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
-import { scanAndHeal } from '@/agents/orchestrator';
 import { supabaseAdmin } from '@/lib/supabase/admin';
 
 const SCANNABLE = /^(app\/api\/.*\.ts|supabase\/migrations\/.*\.sql)$/;
@@ -65,7 +64,7 @@ export async function POST(req: Request) {
   });
 
   const [owner, name] = payload.repository.full_name.split('/');
-  const results: Array<{ path: string; healed: number; prUrl?: string }> = [];
+  const resultsToProcess: Array<{ path: string; source: string; kind: string }> = [];
 
   for (const path of changedPaths) {
     const kind = classify(path);
@@ -78,26 +77,39 @@ export async function POST(req: Request) {
       ref: payload.after,
     });
     if (Array.isArray(file) || file.type !== 'file') continue;
+    
+    // We fetch the base64 content here to ensure GitHub hasn't modified it between push and process
     const source = Buffer.from(file.content, 'base64').toString('utf8');
-
-    const result = await scanAndHeal({
-      repositoryId: repo.id,
-      installationId,
-      owner,
-      repo: name,
-      baseBranch: payload.repository.default_branch,
-      headSha: payload.after,
-      filePath: path,
-      source,
-      artifactKind: kind,
-    });
-    results.push({ path, ...result });
+    resultsToProcess.push({ path, source, kind });
   }
 
+  // Update last scanned SHA immediately
   await supabaseAdmin
     .from('repositories')
     .update({ last_scanned_sha: payload.after })
     .eq('id', repo.id);
 
-  return NextResponse.json({ ok: true, results });
+  // DEFERRED WORKER EXECUTION
+  // We fire off a request to our internal worker endpoint but do NOT await its completion.
+  // This allows the GitHub webhook to receive a 200 OK immediately, avoiding delivery timeouts.
+  const workerUrl = new URL('/api/internal/worker', req.headers.get('origin') || 'http://localhost:3000');
+  
+  fetch(workerUrl.toString(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.INTERNAL_WORKER_SECRET || 'dev_secret'}`
+    },
+    body: JSON.stringify({
+      repo,
+      installationId,
+      owner,
+      name,
+      baseBranch: payload.repository.default_branch,
+      headSha: payload.after,
+      results: resultsToProcess
+    })
+  }).catch(e => console.error("Worker trigger failed:", e));
+
+  return NextResponse.json({ ok: true, deferred_tasks: resultsToProcess.length, status: 'processing_in_background' });
 }

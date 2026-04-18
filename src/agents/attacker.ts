@@ -37,6 +37,7 @@ export interface AuditInput {
   filePath: string;
   source: string;
   artifactKind: 'route' | 'server_action' | 'sql_schema';
+  skipPersist?: boolean;
 }
 
 export async function runAttackerAgent(input: AuditInput): Promise<AuditReport> {
@@ -46,7 +47,7 @@ export async function runAttackerAgent(input: AuditInput): Promise<AuditReport> 
     .join('\n');
 
   const { object } = await generateObject({
-    model: openai('gpt-4.1'),
+    model: openai('gpt-4o'),
     system: ATTACKER_SYSTEM_PROMPT,
     schema: AuditReportSchema,
     temperature: 0.1,
@@ -58,6 +59,10 @@ export async function runAttackerAgent(input: AuditInput): Promise<AuditReport> 
       `--- END SOURCE ---`,
     ].join('\n'),
   });
+
+  if (input.skipPersist) {
+    return { findings: object.findings };
+  }
 
   const novel = await filterNovelFindings(input.repositoryId, object.findings, input.source);
   await persistFindings(input, novel);

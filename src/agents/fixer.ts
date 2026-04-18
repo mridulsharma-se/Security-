@@ -35,7 +35,7 @@ export async function runFixerAgent(args: {
   report: AuditReport;
 }): Promise<FixResult> {
   const { object } = await generateObject({
-    model: openai('gpt-4.1'),
+    model: openai('gpt-4o'),
     system: FIXER_SYSTEM_PROMPT,
     schema: FixSchema,
     temperature: 0.0,
