@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react';
 import './globals.css';
+import { createClient } from '@/lib/supabase/server';
+import SignOutButton from './components/SignOutButton';
 
 export const metadata = {
   title: 'VibeGuard | Security Operations',
   description: 'AI-native security agent mapping and patching critical vulnerabilities.',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en">
       <body>
@@ -26,6 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </svg>
             VibeGuard
           </div>
+          {user && <SignOutButton />}
         </nav>
 
         {children}

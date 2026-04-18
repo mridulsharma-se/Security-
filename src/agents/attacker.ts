@@ -1,5 +1,5 @@
 import { generateObject, embed } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import { ATTACKER_SYSTEM_PROMPT } from './prompts/attacker';
 import { supabaseAdmin } from '@/lib/supabase/admin';
@@ -47,7 +47,7 @@ export async function runAttackerAgent(input: AuditInput): Promise<AuditReport> 
     .join('\n');
 
   const { object } = await generateObject({
-    model: openai('gpt-4o'),
+    model: google('gemini-1.5-pro-latest'),
     system: ATTACKER_SYSTEM_PROMPT,
     schema: AuditReportSchema,
     temperature: 0.1,
@@ -82,18 +82,22 @@ async function filterNovelFindings(
   for (const f of findings) {
     const snippet = lines.slice(f.line_start - 1, f.line_end).join('\n');
     const { embedding } = await embed({
-      model: openai.embedding('text-embedding-3-small'),
+      model: google.textEmbeddingModel('text-embedding-004'),
       value: `${f.category}::${f.title}\n${snippet}`,
     });
 
+    // Gemini embeddings are 768 dimensions. Our db schema uses 1536.
+    // Pad the vector with 0s to avoid Postgres crashing while we transition.
+    const paddedEmbedding = [...embedding, ...new Array(768).fill(0)];
+
     const { data: similar } = await supabaseAdmin.rpc('match_vulnerabilities', {
-      query_embedding: embedding,
+      query_embedding: paddedEmbedding,
       repo_id: repositoryId,
       match_threshold: 0.92,
       match_count: 1,
     });
 
-    if (!similar?.length) novel.push({ ...f, embedding });
+    if (!similar?.length) novel.push({ ...f, embedding: paddedEmbedding });
   }
   return novel;
 }
