@@ -47,8 +47,8 @@ export default function UpdatePasswordPage() {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--accent-primary)', fontFamily: 'Outfit, sans-serif' }}>
+      <div className="surface-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
           Secure New Password
         </h2>
         

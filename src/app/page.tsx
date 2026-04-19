@@ -25,76 +25,57 @@ export default async function DashboardPage() {
   };
 
   return (
-    <main className="dashboard-container">
-      <div className="background-glow"></div>
-      <div className="background-glow second"></div>
-
+    <div className="dashboard-container">
       <header className="page-header">
-        <h1>VibeGuard Security Operations</h1>
-        <p>Real-time autonomous vulnerability detection and healing for your entire codebase.</p>
+        <h1>Projects & Analysis</h1>
+        <p>Real-time autonomous vulnerability detection and healing.</p>
       </header>
 
-      {/* Onboarding & Status Panel */}
-      <section className="glass-panel pulse" style={{ padding: '1.5rem', marginBottom: '2rem', borderLeft: '4px solid var(--accent-primary)' }}>
-        <h3 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-            <path d="m9 12 2 2 4-4" />
-          </svg>
-          System Shield Active
-        </h3>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          VibeGuard is currently monitoring installed Webhooks. When you push code or open Pull Requests on connected GitHub Apps, background agents will automatically review changes, identify vulnerabilities, and proactively submit patch patches. You can review all real-time events below, or run point-in-time scans using the On-Demand tools at the bottom.
-        </p>
-      </section>
-
+      {/* Stats Grid */}
       <div className="stats-grid">
-        <div className="glass-panel">
-          <div className="stat-title" style={{ color: 'var(--critical-color)' }}>Critical Threats Detected</div>
-          <div className="stat-value">{stats.critical}</div>
+        <div className="stat-card">
+          <div className="stat-title">Critical Threats</div>
+          <div className="stat-value" style={{ color: 'var(--critical-color)' }}>{stats.critical}</div>
         </div>
-        <div className="glass-panel">
-          <div className="stat-title" style={{ color: 'var(--high-color)' }}>High Severity Threats</div>
-          <div className="stat-value">{stats.high}</div>
+        <div className="stat-card">
+          <div className="stat-title">High Severity</div>
+          <div className="stat-value" style={{ color: 'var(--high-color)' }}>{stats.high}</div>
         </div>
-        <div className="glass-panel">
-          <div className="stat-title" style={{ color: 'var(--success-color)' }}>Patched Automatically</div>
-          <div className="stat-value">{stats.healed}</div>
+        <div className="stat-card">
+          <div className="stat-title">AI Auto-Patched</div>
+          <div className="stat-value" style={{ color: 'var(--text-main)' }}>{stats.healed}</div>
         </div>
       </div>
 
-      <section className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+      <section className="surface-panel" style={{ marginBottom: '2.5rem', padding: '2rem' }}>
         <h2 className="section-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-          </svg>
-          Continuous Event Monitoring
+          Vulnerability Feed
         </h2>
 
         {!vulnerabilities || vulnerabilities.length === 0 ? (
-          <div className="empty-state" style={{ padding: '4rem 2rem' }}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '1rem' }}>
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-            </svg>
-            <p>No webhook vulnerabilities detected yet. Waiting for incoming pushes...</p>
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+            No vulnerabilities detected. Good job!
           </div>
         ) : (
           <div className="vuln-list">
             {vulnerabilities.map((vuln) => (
               <div key={vuln.id} className="vuln-item">
                 <div className="vuln-info">
-                  <h4>{vuln.title}</h4>
-                  <div className="vuln-meta" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ color: 'var(--text-main)' }}>{vuln.repositories?.full_name}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>•</span>
-                    <span style={{ fontFamily: 'monospace' }}>{vuln.file_path}:{vuln.line_start}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>•</span>
+                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <svg width="16" height="16" fill="var(--text-muted)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"></path><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path></svg>
+                    {vuln.title}
+                  </h4>
+                  <div className="vuln-meta" style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                    <span style={{ color: 'var(--accent-primary)', fontWeight: '500' }}>{vuln.repositories?.full_name}</span>
+                    <span>•</span>
+                    <span>{vuln.file_path}:{vuln.line_start}</span>
+                    <span>•</span>
                     <span suppressHydrationWarning>{new Date(vuln.created_at).toLocaleString()}</span>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   {vuln.status === 'pr_open' && (
-                    <span className="badge" style={{ background: 'rgba(82, 196, 26, 0.15)', color: '#52c41a', border: '1px solid rgba(82, 196, 26, 0.3)' }}>
+                    <span className="badge" style={{ background: 'var(--accent-dim)', color: 'var(--accent-primary)', border: '1px solid var(--accent-primary)' }}>
                       Patch PR Open
                     </span>
                   )}
@@ -109,6 +90,6 @@ export default async function DashboardPage() {
       </section>
 
       <OnDemandScanner />
-    </main>
+    </div>
   );
 }

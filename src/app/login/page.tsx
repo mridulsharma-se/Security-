@@ -75,8 +75,8 @@ export default function LoginPage() {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--accent-primary)', fontFamily: 'Outfit, sans-serif' }}>
+      <div className="surface-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-main)' }}>
           {mode === 'login' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
         </h2>
         
@@ -120,9 +120,9 @@ export default function LoginPage() {
               </button>
               
               <div style={{ display: 'flex', alignItems: 'center', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                <div style={{ flex: 1, height: '1px', background: 'var(--panel-border)' }} />
+                <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
                 <span style={{ margin: '0 1rem' }}>OR</span>
-                <div style={{ flex: 1, height: '1px', background: 'var(--panel-border)' }} />
+                <div style={{ flex: 1, height: '1px', background: 'var(--border-subtle)' }} />
               </div>
             </>
           )}
