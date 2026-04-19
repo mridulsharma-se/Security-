@@ -1,5 +1,5 @@
 import { generateObject } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 import type { AuditReport } from './attacker';
 
@@ -35,7 +35,7 @@ export async function runFixerAgent(args: {
   report: AuditReport;
 }): Promise<FixResult> {
   const { object } = await generateObject({
-    model: openai('gpt-4o'),
+    model: google('gemini-1.5-pro-latest'),
     system: FIXER_SYSTEM_PROMPT,
     schema: FixSchema,
     temperature: 0.0,
