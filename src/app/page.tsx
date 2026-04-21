@@ -1,181 +1,404 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import OnDemandScanner from './components/OnDemandScanner';
+'use client';
 
-export const revalidate = 0;
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export default function LandingPage() {
+  const router = useRouter();
+  const [scrollY, setScrollY] = useState(0);
 
-  if (!user) {
-    redirect('/login');
-  }
-
-  const { data: vulnerabilities } = await supabase
-    .from('vulnerabilities')
-    .select('*, repositories(full_name)')
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  const stats = {
-    critical: vulnerabilities?.filter(v => v.severity === 'critical').length || 0,
-    high: vulnerabilities?.filter(v => v.severity === 'high').length || 0,
-    medium: vulnerabilities?.filter(v => v.severity === 'medium').length || 0,
-    fixed: vulnerabilities?.filter(v => v.status === 'merged').length || 0,
-    total: vulnerabilities?.length || 0,
-  };
-
-  const criticalTrend = stats.critical > 0 ? '+5' : '0';
-  const securityScore = Math.max(0, 100 - (stats.critical * 20 + stats.high * 10 + stats.medium * 5));
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="dashboard-container">
-      <header className="page-header">
-        <h1>Security Dashboard</h1>
-        <p>Real-time autonomous vulnerability detection and AI-powered remediation.</p>
-      </header>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)', overflow: 'hidden' }}>
+      {/* Navigation */}
+      <nav style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '70px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingLeft: '3rem',
+        paddingRight: '3rem',
+        background: 'rgba(10, 13, 23, 0.8)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid var(--border-subtle)',
+        zIndex: 1000,
+      }}>
+        <div style={{
+          fontSize: '1.5rem',
+          fontWeight: '700',
+          color: 'var(--text-main)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--accent-primary)" stroke="var(--accent-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+          </svg>
+          VibeGuard
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <a href="/login" style={{
+            color: 'var(--text-muted)',
+            textDecoration: 'none',
+            fontSize: '0.95rem',
+            fontWeight: '500',
+            transition: 'color 0.3s',
+            cursor: 'pointer',
+          }} onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-main)')} onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}>
+            Login
+          </a>
+          <button onClick={() => router.push('/login')} style={{
+            padding: '0.6rem 1.5rem',
+            background: 'var(--accent-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+          }} onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')} onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent-primary)')}>
+            Sign up
+          </button>
+        </div>
+      </nav>
 
-      {/* Stats Grid */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-header">
-            <div className="stat-title">Critical Issues</div>
-            <div className="stat-icon">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-              </svg>
+      {/* Hero Section with Animated Background */}
+      <section style={{
+        position: 'relative',
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: '70px',
+        overflow: 'hidden',
+      }}>
+        {/* Animated Background Grid */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            radial-gradient(circle at ${25 + scrollY * 0.1}% ${25 + scrollY * 0.1}%,
+              rgba(168, 85, 247, 0.15) 0%,
+              transparent 50%),
+            radial-gradient(circle at ${75 - scrollY * 0.1}% ${75 + scrollY * 0.15}%,
+              rgba(59, 130, 246, 0.15) 0%,
+              transparent 50%)
+          `,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Animated Grid Pattern */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '100px 100px',
+          backgroundPosition: `0px ${scrollY * 0.5}px`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Content */}
+        <div style={{
+          position: 'relative',
+          zIndex: 10,
+          textAlign: 'center',
+          maxWidth: '900px',
+          paddingLeft: '2rem',
+          paddingRight: '2rem',
+        }}>
+          <div style={{
+            display: 'inline-block',
+            padding: '0.75rem 1.5rem',
+            background: 'rgba(168, 85, 247, 0.15)',
+            borderRadius: '50px',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            marginBottom: '2rem',
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            color: 'var(--accent-primary)',
+          }}>
+            ✨ Meet VibeGuard: The AI Security Fabric
+          </div>
+
+          <h1 style={{
+            fontSize: '3.5rem',
+            fontWeight: '700',
+            lineHeight: '1.2',
+            marginBottom: '1.5rem',
+            color: 'var(--text-main)',
+            background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>
+            Unleash AI Innovators Securely
+          </h1>
+
+          <p style={{
+            fontSize: '1.2rem',
+            lineHeight: '1.8',
+            color: 'var(--text-secondary)',
+            marginBottom: '3rem',
+            maxWidth: '700px',
+            margin: '0 auto 3rem',
+          }}>
+            A new autonomous defense architecture designed for an era where code creation has accelerated beyond human capacity. Weave an invisible, intelligent layer of defense into every creation.
+          </p>
+
+          <div style={{
+            display: 'flex',
+            gap: '1.5rem',
+            justifyContent: 'center',
+            marginBottom: '4rem',
+          }}>
+            <button onClick={() => router.push('/login')} style={{
+              padding: '1rem 2.5rem',
+              background: 'var(--accent-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              boxShadow: '0 8px 24px rgba(168, 85, 247, 0.3)',
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--accent-hover)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 12px 32px rgba(168, 85, 247, 0.4)';
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--accent-primary)';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(168, 85, 247, 0.3)';
+            }}>
+              Explore the platform
+            </button>
+            <button onClick={() => {}} style={{
+              padding: '1rem 2.5rem',
+              background: 'transparent',
+              color: 'var(--text-main)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '8px',
+              fontWeight: '600',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+            }} onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--accent-primary)';
+              e.currentTarget.style.background = 'rgba(168, 85, 247, 0.1)';
+            }} onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              e.currentTarget.style.background = 'transparent';
+            }}>
+              Book a live demo →
+            </button>
+          </div>
+
+          {/* Stats Row */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '2rem',
+            maxWidth: '600px',
+            margin: '0 auto',
+            paddingTop: '2rem',
+            borderTop: '1px solid var(--border-subtle)',
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+                99.9%
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                Threat Detection Accuracy
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+                24/7
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                Continuous Monitoring
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+                &lt;5min
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                Mean Response Time
+              </div>
             </div>
           </div>
-          <div className="stat-value" style={{ color: 'var(--critical-color)' }}>{stats.critical}</div>
-          <div className="stat-meta negative">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5z"/></svg>
-            {criticalTrend} since last week
-          </div>
         </div>
+      </section>
 
-        <div className="stat-card">
-          <div className="stat-header">
-            <div className="stat-title">High Severity</div>
-            <div className="stat-icon">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-              </svg>
-            </div>
+      {/* Features Section */}
+      <section style={{
+        position: 'relative',
+        zIndex: 20,
+        paddingTop: '6rem',
+        paddingBottom: '6rem',
+        paddingLeft: '2rem',
+        paddingRight: '2rem',
+        background: 'var(--bg-base)',
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <h2 style={{
+              fontSize: '2.5rem',
+              fontWeight: '700',
+              marginBottom: '1rem',
+              color: 'var(--text-main)',
+            }}>
+              Enterprise-Grade Security
+            </h2>
+            <p style={{
+              fontSize: '1.1rem',
+              color: 'var(--text-secondary)',
+              maxWidth: '600px',
+              margin: '0 auto',
+            }}>
+              Comprehensive protection powered by AI and autonomous agents
+            </p>
           </div>
-          <div className="stat-value" style={{ color: 'var(--high-color)' }}>{stats.high}</div>
-          <div className="stat-meta">
-            <span>{stats.medium} medium issues</span>
-          </div>
-        </div>
 
-        <div className="stat-card">
-          <div className="stat-header">
-            <div className="stat-title">Fixed</div>
-            <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: 'var(--success-color)' }}>
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-              </svg>
-            </div>
-          </div>
-          <div className="stat-value" style={{ color: 'var(--success-color)' }}>{stats.fixed}</div>
-          <div className="stat-meta positive">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-            {stats.fixed > 0 ? `${Math.round((stats.fixed / stats.total) * 100)}%` : '0%'} resolved
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-header">
-            <div className="stat-title">Security Score</div>
-            <div className="stat-icon">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-            </div>
-          </div>
-          <div className="stat-value">{securityScore}</div>
-          <div className="stat-meta">
-            <span>out of 100</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Vulnerabilities */}
-      {vulnerabilities && vulnerabilities.length > 0 && (
-        <section className="surface-panel" style={{ marginBottom: '2.5rem' }}>
-          <h2 className="section-title">
-            Recent Findings
-            <span style={{ float: 'right', fontWeight: '500', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              {stats.total} total
-            </span>
-          </h2>
-
-          <div className="vuln-list">
-            {vulnerabilities.slice(0, 5).map((vuln) => (
-              <div key={vuln.id} className="vuln-item">
-                <div className="vuln-info">
-                  <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <svg width="16" height="16" fill="var(--text-muted)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"></path><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"></path></svg>
-                    {vuln.title}
-                  </h4>
-                  <div className="vuln-meta">
-                    <div className="vuln-meta-item">
-                      <span style={{ color: 'var(--accent-primary)', fontWeight: '500' }}>{vuln.repositories?.full_name}</span>
-                    </div>
-                    <div className="vuln-meta-item">
-                      <span className="table-cell-mono">{vuln.file_path}:{vuln.line_start}</span>
-                    </div>
-                    <div className="vuln-meta-item">
-                      <span suppressHydrationWarning>{new Date(vuln.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="vuln-actions">
-                  {vuln.status === 'pr_open' && (
-                    <span className="badge" style={{ background: 'var(--accent-dim)', color: 'var(--accent-primary)' }}>
-                      PR Open
-                    </span>
-                  )}
-                  {vuln.status === 'merged' && (
-                    <span className="badge success">
-                      Fixed
-                    </span>
-                  )}
-                  <span className={`badge ${vuln.severity}`}>
-                    {vuln.severity}
-                  </span>
-                </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '2rem',
+          }}>
+            {[
+              { icon: '🛡️', title: 'Real-time Detection', desc: 'Identify vulnerabilities instantly as code changes' },
+              { icon: '🤖', title: 'AI-Powered Remediation', desc: 'Automated fix generation and PR creation' },
+              { icon: '🔄', title: 'Continuous Monitoring', desc: '24/7 scanning and threat assessment' },
+              { icon: '🔗', title: 'Deep Integrations', desc: 'GitHub, GitLab, Jira, Slack and more' },
+              { icon: '📊', title: 'Compliance Reports', desc: 'Export detailed security audit trails' },
+              { icon: '⚡', title: 'Lightning Fast', desc: 'Scan and fix in under 5 minutes' },
+            ].map((feature, idx) => (
+              <div key={idx} style={{
+                padding: '2rem',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: '12px',
+                transition: 'all 0.3s',
+                cursor: 'pointer',
+              }} onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                e.currentTarget.style.background = 'rgba(168, 85, 247, 0.05)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+              }} onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                e.currentTarget.style.background = 'var(--bg-card)';
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{feature.icon}</div>
+                <h3 style={{
+                  fontSize: '1.2rem',
+                  fontWeight: '700',
+                  marginBottom: '0.5rem',
+                  color: 'var(--text-main)',
+                }}>
+                  {feature.title}
+                </h3>
+                <p style={{
+                  fontSize: '0.95rem',
+                  color: 'var(--text-secondary)',
+                  lineHeight: '1.6',
+                }}>
+                  {feature.desc}
+                </p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {stats.total > 5 && (
-            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <a href="/issues" className="btn btn-ghost" style={{ fontSize: '0.9rem' }}>
-                View all {stats.total} issues →
-              </a>
-            </div>
-          )}
-        </section>
-      )}
+      {/* CTA Section */}
+      <section style={{
+        position: 'relative',
+        zIndex: 20,
+        paddingTop: '6rem',
+        paddingBottom: '6rem',
+        paddingLeft: '2rem',
+        paddingRight: '2rem',
+        background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
+        textAlign: 'center',
+      }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <h2 style={{
+            fontSize: '2.5rem',
+            fontWeight: '700',
+            marginBottom: '1.5rem',
+            color: 'var(--text-main)',
+          }}>
+            Ready to Secure Your Code?
+          </h2>
+          <p style={{
+            fontSize: '1.1rem',
+            color: 'var(--text-secondary)',
+            marginBottom: '2rem',
+            lineHeight: '1.8',
+          }}>
+            Join thousands of developers and enterprises using VibeGuard to protect their code from vulnerabilities. Start with a free trial today.
+          </p>
+          <button onClick={() => router.push('/login')} style={{
+            padding: '1rem 3rem',
+            background: 'var(--accent-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s',
+            boxShadow: '0 8px 24px rgba(168, 85, 247, 0.3)',
+          }} onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--accent-hover)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }} onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--accent-primary)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}>
+            Get Started Free
+          </button>
+        </div>
+      </section>
 
-      {(!vulnerabilities || vulnerabilities.length === 0) && (
-        <section className="surface-panel empty-state" style={{ marginBottom: '2.5rem' }}>
-          <div className="empty-state-icon">
-            <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S15.33 8 14.5 8 13 8.67 13 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S8.33 8 7.5 8 6 8.67 6 9.5 6.67 11 7.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-            </svg>
-          </div>
-          <div className="empty-state-title">No Vulnerabilities Detected</div>
-          <div className="empty-state-description">
-            Your repositories are secure! Keep them that way by running regular scans.
-          </div>
-        </section>
-      )}
-
-      {/* Scanner */}
-      <OnDemandScanner />
+      {/* Footer */}
+      <footer style={{
+        position: 'relative',
+        zIndex: 20,
+        paddingTop: '4rem',
+        paddingBottom: '4rem',
+        paddingLeft: '2rem',
+        paddingRight: '2rem',
+        background: 'var(--bg-base)',
+        borderTop: '1px solid var(--border-subtle)',
+        textAlign: 'center',
+      }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          © 2024 VibeGuard. All rights reserved. Enterprise security for AI innovators.
+        </p>
+      </footer>
     </div>
   );
 }

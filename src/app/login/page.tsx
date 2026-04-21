@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +23,7 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
+      const supabase = createClient();
       if (mode === 'signup') {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
@@ -48,7 +48,7 @@ export default function LoginPage() {
           password,
         });
         if (signInError) throw signInError;
-        router.push('/');
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
@@ -60,6 +60,7 @@ export default function LoginPage() {
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
+      const supabase = createClient();
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {

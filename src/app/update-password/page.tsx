@@ -13,7 +13,6 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const supabase = createClient();
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,6 +33,7 @@ export default function UpdatePasswordPage() {
     }
 
     try {
+      const supabase = createClient();
       const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
@@ -42,7 +42,7 @@ export default function UpdatePasswordPage() {
 
       setMessage('✓ Password updated successfully! Redirecting to dashboard...');
       setTimeout(() => {
-        router.push('/');
+        router.push('/dashboard');
       }, 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to update password');

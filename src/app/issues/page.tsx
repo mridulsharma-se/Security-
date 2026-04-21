@@ -1,6 +1,6 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/server';
+import { getUser, getVulnerabilities } from '@/app/actions/auth';
 import { useEffect, useState } from 'react';
 
 export default function IssuesPage() {
@@ -12,21 +12,17 @@ export default function IssuesPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getUser();
 
       if (!user) {
         window.location.href = '/login';
         return;
       }
 
-      const { data } = await supabase
-        .from('vulnerabilities')
-        .select('*, repositories(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(200);
-
-      setVulnerabilities(data || []);
+      const data = await getVulnerabilities();
+      if (data) {
+        setVulnerabilities(data);
+      }
       setLoading(false);
     };
     fetchData();

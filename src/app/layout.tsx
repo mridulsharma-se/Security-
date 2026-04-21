@@ -10,10 +10,18 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  let userInitial = '';
 
-  const userInitial = user ? (user.user_metadata?.full_name || 'U').charAt(0).toUpperCase() : '';
+  try {
+    const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    user = authUser;
+    userInitial = user ? (user.user_metadata?.full_name || 'U').charAt(0).toUpperCase() : '';
+  } catch (error) {
+    // Environment variables not set or Supabase client couldn't be created
+    // This is normal for the landing page
+  }
 
   return (
     <html lang="en">
