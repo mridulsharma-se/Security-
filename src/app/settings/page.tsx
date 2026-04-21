@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/app/actions/auth';
 
 type TabType = 'general' | 'behavior' | 'tokens' | 'danger';
 
@@ -13,8 +13,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getUser();
       if (!user) {
         window.location.href = '/login';
         return;
